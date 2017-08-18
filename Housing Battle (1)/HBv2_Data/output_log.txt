@@ -1,0 +1,138 @@
+Initialize engine version: 5.6.0f3 (497a0f351392)
+GfxDevice: creating device client; threaded=1
+Direct3D:
+    Version:  Direct3D 11.0 [level 11.0]
+    Renderer: NVIDIA GeForce GTX 950M (ID=0x139a)
+    Vendor:   NVIDIA
+    VRAM:     3072 MB
+    Driver:   21.21.13.6909
+Begin MonoManager ReloadAssembly
+Platform assembly: D:\Unity Projects\Housingbattle\housingbattle4\Housing Battle (1)\HBv2_Data\Managed\UnityEngine.dll (this message is harmless)
+Loading D:\Unity Projects\Housingbattle\housingbattle4\Housing Battle (1)\HBv2_Data\Managed\UnityEngine.dll into Unity Child Domain
+Platform assembly: D:\Unity Projects\Housingbattle\housingbattle4\Housing Battle (1)\HBv2_Data\Managed\Assembly-CSharp.dll (this message is harmless)
+Loading D:\Unity Projects\Housingbattle\housingbattle4\Housing Battle (1)\HBv2_Data\Managed\Assembly-CSharp.dll into Unity Child Domain
+Platform assembly: D:\Unity Projects\Housingbattle\housingbattle4\Housing Battle (1)\HBv2_Data\Managed\UnityEngine.UI.dll (this message is harmless)
+Loading D:\Unity Projects\Housingbattle\housingbattle4\Housing Battle (1)\HBv2_Data\Managed\UnityEngine.UI.dll into Unity Child Domain
+Platform assembly: D:\Unity Projects\Housingbattle\housingbattle4\Housing Battle (1)\HBv2_Data\Managed\UnityEngine.Networking.dll (this message is harmless)
+Loading D:\Unity Projects\Housingbattle\housingbattle4\Housing Battle (1)\HBv2_Data\Managed\UnityEngine.Networking.dll into Unity Child Domain
+Platform assembly: D:\Unity Projects\Housingbattle\housingbattle4\Housing Battle (1)\HBv2_Data\Managed\UnityEngine.Analytics.dll (this message is harmless)
+Loading D:\Unity Projects\Housingbattle\housingbattle4\Housing Battle (1)\HBv2_Data\Managed\UnityEngine.Analytics.dll into Unity Child Domain
+Platform assembly: D:\Unity Projects\Housingbattle\housingbattle4\Housing Battle (1)\HBv2_Data\Managed\Facebook.Unity.dll (this message is harmless)
+Loading D:\Unity Projects\Housingbattle\housingbattle4\Housing Battle (1)\HBv2_Data\Managed\Facebook.Unity.dll into Unity Child Domain
+Platform assembly: D:\Unity Projects\Housingbattle\housingbattle4\Housing Battle (1)\HBv2_Data\Managed\Facebook.Unity.Arcade.dll (this message is harmless)
+Loading D:\Unity Projects\Housingbattle\housingbattle4\Housing Battle (1)\HBv2_Data\Managed\Facebook.Unity.Arcade.dll into Unity Child Domain
+Platform assembly: D:\Unity Projects\Housingbattle\housingbattle4\Housing Battle (1)\HBv2_Data\Managed\FacebookNamedPipeClient.dll (this message is harmless)
+Loading D:\Unity Projects\Housingbattle\housingbattle4\Housing Battle (1)\HBv2_Data\Managed\FacebookNamedPipeClient.dll into Unity Child Domain
+Platform assembly: D:\Unity Projects\Housingbattle\housingbattle4\Housing Battle (1)\HBv2_Data\Managed\Facebook.Unity.Settings.dll (this message is harmless)
+Loading D:\Unity Projects\Housingbattle\housingbattle4\Housing Battle (1)\HBv2_Data\Managed\Facebook.Unity.Settings.dll into Unity Child Domain
+- Completed reload, in  0.180 seconds
+Platform assembly: D:\Unity Projects\Housingbattle\housingbattle4\Housing Battle (1)\HBv2_Data\Managed\System.Core.dll (this message is harmless)
+Platform assembly: D:\Unity Projects\Housingbattle\housingbattle4\Housing Battle (1)\HBv2_Data\Managed\System.dll (this message is harmless)
+desktop: 1920x1080 60Hz; virtual: 1920x1080 at 0,0
+<RI> Initializing input.
+<RI> Input initialized.
+<RI> Initialized touch support.
+UnloadTime: 2.384592 ms
+InvalidOperationException: Pipe name not passed to application on start.
+ Make sure you are running inside the facebook games client.
+  at Facebook.Unity.Arcade.ArcadeWrapper..ctor () [0x00000] in <filename unknown>:0 
+  at (wrapper managed-to-native) System.Reflection.MonoCMethod:InternalInvoke (object,object[],System.Exception&)
+  at System.Reflection.MonoCMethod.Invoke (System.Object obj, BindingFlags invokeAttr, System.Reflection.Binder binder, System.Object[] parameters, System.Globalization.CultureInfo culture) [0x00000] in <filename unknown>:0 
+Rethrow as TargetInvocationException: Exception has been thrown by the target of an invocation.
+  at System.Reflection.MonoCMethod.Invoke (System.Object obj, BindingFlags invokeAttr, System.Reflection.Binder binder, System.Object[] parameters, System.Globalization.CultureInfo culture) [0x00000] in <filename unknown>:0 
+  at System.Reflection.MonoCMethod.Invoke (BindingFlags invokeAttr, System.Reflection.Binder binder, System.Object[] parameters, System.Globalization.CultureInfo culture) [0x00000] in <filename unknown>:0 
+  at System.Reflection.ConstructorInfo.Invoke (System.Object[] parameters) [0x00000] in <filename unknown>:0 
+  at System.Activator.CreateInstance (System.Type type, Boolean nonPublic) [0x00000] in <filename unknown>:0 
+  at System.Activator.CreateInstance (System.Type type) [0x00000] in <filename unknown>:0 
+  at Facebook.Unity.Arcade.ArcadeFacebook.GetArcadeWrapper () [0x00000] in <filename unknown>:0 
+  at Facebook.Unity.Arcade.ArcadeFacebook..ctor () [0x00000] in <filename unknown>:0 
+  at Facebook.Unity.Arcade.ArcadeFacebookLoader.get_FBGameObject () [0x00000] in <filename unknown>:0 
+  at Facebook.Unity.FB+CompiledFacebookLoader.Start () [0x00000] in <filename unknown>:0 
+ 
+(Filename:  Line: -1)
+
+Setting up 4 worker threads for Enlighten.
+  Thread -> id: 2490 -> priority: 1 
+  Thread -> id: 18f4 -> priority: 1 
+  Thread -> id: 26c8 -> priority: 1 
+  Thread -> id: 404 -> priority: 1 
+Unloading 6 Unused Serialized files (Serialized files now loaded: 0)
+UnloadTime: 4.969086 ms
+FB.Init() has already been called.  You only need to call this once and only once.
+ 
+(Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/DebugBindings.gen.cpp Line: 51)
+
+
+Unloading 7 unused Assets to reduce memory usage. Loaded Objects now: 1180.
+Total: 0.848987 ms (FindLiveObjects: 0.103111 ms CreateObjectMapping: 0.043456 ms MarkObjects: 0.686617 ms  DeleteObjects: 0.015407 ms)
+
+MatchMakingClient ListMatches :https://mm.unet.unity3d.com/json/reply/ListMatchRequest
+ 
+(Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/DebugBindings.gen.cpp Line: 51)
+
+MatchMakingClient Join :https://mm.unet.unity3d.com/json/reply/JoinMatchRequest
+ 
+(Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/DebugBindings.gen.cpp Line: 51)
+
+NullReferenceException: Object reference not set to an instance of an object
+  at CanvasController.OnGridSpaceClick (Int32 idx) [0x00000] in <filename unknown>:0 
+  at UnityEngine.Events.InvokableCall`1[System.Int32].Invoke (System.Object[] args) [0x00000] in <filename unknown>:0 
+  at UnityEngine.Events.CachedInvokableCall`1[System.Int32].Invoke (System.Object[] args) [0x00000] in <filename unknown>:0 
+  at UnityEngine.Events.InvokableCallList.Invoke (System.Object[] parameters) [0x00000] in <filename unknown>:0 
+  at UnityEngine.Events.UnityEventBase.Invoke (System.Object[] parameters) [0x00000] in <filename unknown>:0 
+  at UnityEngine.Events.UnityEvent.Invoke () [0x00000] in <filename unknown>:0 
+  at UnityEngine.UI.Button.Press () [0x00000] in <filename unknown>:0 
+  at UnityEngine.UI.Button.OnPointerClick (UnityEngine.EventSystems.PointerEventData eventData) [0x00000] in <filename unknown>:0 
+  at UnityEngine.EventSystems.ExecuteEvents.Execute (IPointerClickHandler handler, UnityEngine.EventSystems.BaseEventData eventData) [0x00000] in <filename unknown>:0 
+  at UnityEngine.EventSystems.ExecuteEvents.Execute[IPointerClickHandler] (UnityEngine.GameObject target, UnityEngine.EventSystems.BaseEventData eventData, UnityEngine.EventSystems.EventFunction`1 functor) [0x00000] in <filename unknown>:0 
+UnityEngine.DebugLogHandler:Internal_LogException(Exception, Object)
+UnityEngine.DebugLogHandler:LogException(Exception, Object)
+UnityEngine.Logger:LogException(Exception, Object)
+UnityEngine.Debug:LogException(Exception)
+UnityEngine.EventSystems.ExecuteEvents:Execute(GameObject, BaseEventData, EventFunction`1)
+UnityEngine.EventSystems.StandaloneInputModule:ProcessMousePress(MouseButtonEventData)
+UnityEngine.EventSystems.StandaloneInputModule:ProcessMouseEvent(Int32)
+UnityEngine.EventSystems.StandaloneInputModule:ProcessMouseEvent()
+UnityEngine.EventSystems.StandaloneInputModule:Process()
+UnityEngine.EventSystems.EventSystem:Update()
+ 
+(Filename:  Line: -1)
+
+NullReferenceException: Object reference not set to an instance of an object
+  at CanvasController.OnGridSpaceClick (Int32 idx) [0x00000] in <filename unknown>:0 
+  at UnityEngine.Events.InvokableCall`1[System.Int32].Invoke (System.Object[] args) [0x00000] in <filename unknown>:0 
+  at UnityEngine.Events.CachedInvokableCall`1[System.Int32].Invoke (System.Object[] args) [0x00000] in <filename unknown>:0 
+  at UnityEngine.Events.InvokableCallList.Invoke (System.Object[] parameters) [0x00000] in <filename unknown>:0 
+  at UnityEngine.Events.UnityEventBase.Invoke (System.Object[] parameters) [0x00000] in <filename unknown>:0 
+  at UnityEngine.Events.UnityEvent.Invoke () [0x00000] in <filename unknown>:0 
+  at UnityEngine.UI.Button.Press () [0x00000] in <filename unknown>:0 
+  at UnityEngine.UI.Button.OnPointerClick (UnityEngine.EventSystems.PointerEventData eventData) [0x00000] in <filename unknown>:0 
+  at UnityEngine.EventSystems.ExecuteEvents.Execute (IPointerClickHandler handler, UnityEngine.EventSystems.BaseEventData eventData) [0x00000] in <filename unknown>:0 
+  at UnityEngine.EventSystems.ExecuteEvents.Execute[IPointerClickHandler] (UnityEngine.GameObject target, UnityEngine.EventSystems.BaseEventData eventData, UnityEngine.EventSystems.EventFunction`1 functor) [0x00000] in <filename unknown>:0 
+UnityEngine.DebugLogHandler:Internal_LogException(Exception, Object)
+UnityEngine.DebugLogHandler:LogException(Exception, Object)
+UnityEngine.Logger:LogException(Exception, Object)
+UnityEngine.Debug:LogException(Exception)
+UnityEngine.EventSystems.ExecuteEvents:Execute(GameObject, BaseEventData, EventFunction`1)
+UnityEngine.EventSystems.StandaloneInputModule:ProcessMousePress(MouseButtonEventData)
+UnityEngine.EventSystems.StandaloneInputModule:ProcessMouseEvent(Int32)
+UnityEngine.EventSystems.StandaloneInputModule:ProcessMouseEvent()
+UnityEngine.EventSystems.StandaloneInputModule:Process()
+UnityEngine.EventSystems.EventSystem:Update()
+ 
+(Filename:  Line: -1)
+
+MatchMakingClient DropConnection :https://mm.unet.unity3d.com/json/reply/DropConnectionRequest
+ 
+(Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/DebugBindings.gen.cpp Line: 51)
+
+Unloading 3 Unused Serialized files (Serialized files now loaded: 0)
+UnloadTime: 1.684543 ms
+FB.Init() has already been called.  You only need to call this once and only once.
+ 
+(Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/DebugBindings.gen.cpp Line: 51)
+
+
+Unloading 102 unused Assets to reduce memory usage. Loaded Objects now: 819.
+Total: 0.797629 ms (FindLiveObjects: 0.118518 ms CreateObjectMapping: 0.037530 ms MarkObjects: 0.459851 ms  DeleteObjects: 0.180148 ms)
+

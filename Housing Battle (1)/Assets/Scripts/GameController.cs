@@ -7,6 +7,8 @@ using UnityEngine.Networking;
 
 public class GameController : NetworkBehaviour {
 
+	#region Public Variables
+
 	public Button[] buttonList2;
     public GameObject house1;
     public GameObject house2;
@@ -28,11 +30,18 @@ public class GameController : NetworkBehaviour {
 	public MatchController matchController;
 	public PlayerController playerController;
 	public CanvasController canvasController;
+	public GameObject explosionMine;
+	public GameObject explosionDynamite;
+
+	#endregion
+
+	#region Private variables
 
     private System.Random randomness = new System.Random(); //used for powerup spawn
     private int playerSide;
 	private int power1;
 	private int power2;
+	private int gamePowerUp;
     private int score1;
     private int score2;
     private int moveCount;
@@ -45,6 +54,10 @@ public class GameController : NetworkBehaviour {
     private bool newBuilding;
 	private int buildNumber; // for hammer power up
 
+	#endregion
+
+	#region Startup Functions
+
     private void Awake() {
 		// change button array from public to private (there can be array out of bounds otherwise)
 		buttonList = new Button[25];
@@ -54,10 +67,12 @@ public class GameController : NetworkBehaviour {
         SetGameControllerReferenceButtons();
 		currentPowerUp1.SetGameControllerReference (this);
 		currentPowerUp2.SetGameControllerReference (this);
+		canvasController.SetGameControllerReference (this);
 
         moveCount = 0;
 		power1 = -1;
 		power2 = -1;
+		gamePowerUp = -1;
         score1 = 0;
         score2 = 0;
 		gameOver.text = "";
@@ -105,6 +120,88 @@ public class GameController : NetworkBehaviour {
 		// this.RemoveObserver (OnAddHouse, PlayerController.AddHouse);
 	}
 
+	void OnMatchReady(object sender, object args){
+		if (matchController.clientPlayer.isLocalPlayer) {
+			matchController.clientPlayer.CmdCoinToss();
+		}
+
+		for (int i = 0; i < numberOfObstacles; i++) {
+			CmdSpawnObstacles ();
+		}
+	}
+
+	void OnCoinToss(object sender, object args){
+		bool coinToss = (bool)args;
+		matchController.hostPlayer.player = coinToss ? 1 : 2;
+		matchController.clientPlayer.player = coinToss ? 2 : 1;
+	}
+
+	#endregion
+
+	#region Set Button Functions
+
+	void SetGameControllerReferenceButtons() {
+		for (int i = 0; i < buttonList.Length; i++) {
+			buttonList[i].GetComponentInParent<ButtonController>().SetGameControllerReference(this);
+		}
+	}
+
+	public void ToggleButtonsInteractable(bool toggle){
+		for (int i = 0; i < 5; i++){
+			for (int j = 0; j < 5; j++) {
+				grid [i, j].button.interactable = toggle;
+			}
+		}
+		// Debug.Log ("Successfully toggled buttons");
+	}
+		
+	public void SetPowerUp(int powerUp){
+		if (powerUp == 1) {
+			currentPowerUp1.SetInteractable (false);
+			currentPowerUp2.SetInteractable (false);
+		} else if (powerUp == 2) {
+			SetBuildingsInteractable (true);
+		}
+		for (int i = 0; i < buttonList.Length; i++) {
+			buttonList [i].GetComponentInParent<ButtonController> ().SetPowerUp (powerUp);
+		}
+		gamePowerUp = powerUp;
+	}
+
+	#endregion
+
+	#region Network Functions
+
+	public void SetBuildingsInteractable(bool interactable){
+		for (int i = 0; i < 5; i++) {
+			for (int j = 0; j < 5; j++) {
+				if (grid [i, j].buildingType > 0) { // buildingType is {1,3,4,5,9,10}
+					grid [i, j].button.interactable = interactable;
+				} else {
+					grid [i, j].button.interactable = !interactable;
+				}
+			}
+		}
+	}
+
+	[Command]
+	public void CmdSetBuildingsInteractable(bool interactable){
+		RpcSetBuildingsInteractable (interactable);
+	}
+
+	[ClientRpc]
+	void RpcSetBuildingsInteractable(bool interactable) {
+		for (int i = 0; i < 5; i++) {
+			for (int j = 0; j < 5; j++) {
+				if (grid [i, j].buildingType > 0) { // buildingType is {1,3,4,5,9,10}
+					grid [i, j].button.interactable = interactable;
+				} else {
+					grid [i, j].button.interactable = !interactable;
+				}
+			}
+		}
+	}
+
 	[Command]
 	public void CmdAddPowerUp(int powerUpNumber){
 		RpcAddPowerUp (powerUpNumber);
@@ -136,31 +233,6 @@ public class GameController : NetworkBehaviour {
 		NetworkServer.Spawn(newObstacle);
 		grid [row, col].button.interactable = false;
 	}
-	/*
-	void SpawnObstacles(){
-		for (int i = 0; i < 1; i++) {
-			int pos = GenerateObstaclePosition ();
-			int row = pos / 5;
-			int col = pos % 5;
-			grid [row, col].buildingType = 10;
-			GameObject newObstacle = Instantiate (rock, grid [row, col].button.transform.position - new Vector3 (0.42f, 0, 0.5f), Quaternion.Euler (new Vector3 (-90, 0, 0)));
-			NetworkServer.Spawn (newObstacle);
-			grid [row, col].button.interactable = false;
-		}
-	}
-	*/
-
-	int GenerateObstaclePosition(){
-		bool obstacleBuilt = false;
-		int row = randomness.Next (5);
-		int col = randomness.Next (5);
-		while (!obstacleBuilt) {
-			if (grid [row, col].buildingType == 0) {
-				obstacleBuilt = true;
-			}
-		}
-		return row * 5 + col;
-	}
 
 	[Command]
 	public void CmdAddHouse(int row, int col){
@@ -174,12 +246,6 @@ public class GameController : NetworkBehaviour {
 		EndTurn ();
 	}
 
-	public void OnGridSpaceClick(int index){
-		int row = index / 5;
-		int col = index % 5;
-		CmdAddHouse (row, col);
-	}
-
 	[Command]
 	public void CmdSpawnPowerUp(){
 		int powerUpIndex = GetPowerUpIndex ();
@@ -191,6 +257,11 @@ public class GameController : NetworkBehaviour {
 		SpawnPowerUp(powerUpIndex);
 	}
 
+	[ClientRpc]
+	public void RpcDestroyObject(int row, int col){
+		Destroy (grid[row, col].building);
+	}
+		
 	[Command]
 	public void CmdToggleButtonInteractable(int row, int col, bool toggle){
 		RpcToggleButtonInteractable (row, col, toggle);
@@ -201,6 +272,22 @@ public class GameController : NetworkBehaviour {
 		grid [row, col].button.interactable = toggle;
 	}
 
+	#endregion
+
+	#region Add Objects
+
+	int GenerateObstaclePosition(){
+		bool obstacleBuilt = false;
+		int row = randomness.Next (5);
+		int col = randomness.Next (5);
+		while (!obstacleBuilt) {
+			if (grid [row, col].buildingType == 0) {
+				obstacleBuilt = true;
+			}
+		}
+		return row * 5 + col;
+	}
+
 	public void SpawnPowerUp(int index){
 		if (index == -1) {
 			return;
@@ -209,14 +296,12 @@ public class GameController : NetworkBehaviour {
 		int col = index % 5;
 		grid[row, col].buildingType = -1;
 		grid[row, col].building = Instantiate(powerup, grid[row, col].button.transform.position, Quaternion.Euler(new Vector3(0,226,0)));
-		// NetworkServer.SpawnWithClientAuthority (newPowerUp, playerController.gameObject);
 		grid[row, col].player = 0;
 	}
-		
+
 	public int GetPowerUpIndex() { //power up spawn checks for emptyspaces then adds power up randomly every turn
 		int spawndecision = randomness.Next(spawnRate); //1 in 4 chance of spawning a powerup
 		if (spawndecision == spawnRate - 1) {
-			// Debug.Log("Spawndecision=" + spawndecision);
 
 			List<GridSpace> emptyslots = new List<GridSpace>();
 			for (int i = 0; i < 5; i++) {
@@ -236,64 +321,121 @@ public class GameController : NetworkBehaviour {
 		return -1;
 	}
 
-	void OnMatchReady(object sender, object args){
-		if (matchController.clientPlayer.isLocalPlayer) {
-			matchController.clientPlayer.CmdCoinToss();
+	public GameObject AddMine(int row, int col){
+		// destroy mine, if there is one already
+		Vector3 location = grid[row, col].button.transform.position;
+		// possible bug here
+		Destroy (grid [row, col].mine);
+		if (playerSide == 1) {
+			grid [row, col].mine = Instantiate (mine1, location, Quaternion.identity);
+			power1 = -1;
+		} else {
+			grid [row, col].mine = Instantiate (mine2, location, Quaternion.identity);
+			power2 = -1;
 		}
+		grid[row, col].hasMine = true; // mine
+		AddPowerUp(-1);
+		return grid [row, col].mine;
+	}
 
-		for (int i = 0; i < numberOfObstacles; i++) {
-			CmdSpawnObstacles ();
+	public GameObject AddHouse(int row, int col) {
+		Vector3 location = grid [row, col].button.transform.position;
+		// if there is mine, it explodes and the player's new house explodes
+		if (grid [row, col].hasMine) {
+			return null;
+		} else {
+			if (playerSide == 1) {
+				if (grid [row, col].buildingType == -1) { // if power up
+					Destroy(grid[row, col].building);
+					//set power up
+					// AddPowerUp(randomness.Next(3));
+				}
+
+				grid[row, col].building = Instantiate(house1, location, Quaternion.identity);
+				grid[row, col].player = 1;
+			}
+			else {
+				if (grid [row, col].buildingType == -1) { // if power up
+					Destroy(grid[row, col].building); 
+					//setpowerup
+					// AddPowerUp(randomness.Next(3));
+				}
+
+				grid [row, col].building = Instantiate (house2, location, Quaternion.identity);
+				grid[row, col].player = 2;
+			}
+
+			grid[row, col].buildingType = 1;
+			newRow1 = row;
+			newCol1 = col;
+			newBuilding = true;
+			return grid [row, col].building;
 		}
 	}
 
-	void OnCoinToss(object sender, object args){
-		bool coinToss = (bool)args;
-		matchController.hostPlayer.player = coinToss ? 1 : 2;
-		matchController.clientPlayer.player = coinToss ? 2 : 1;
+	public void AddPowerUp(){
+		int powerUpNumber = randomness.Next (3);
+		if (playerSide == 1) {
+			power1 = powerUpNumber;
+			currentPowerUp1.AddPowerUp (powerUpNumber);
+		} else {
+			power2 = powerUpNumber;
+			currentPowerUp2.AddPowerUp (powerUpNumber);
+		}
 	}
 
-	[ClientRpc]
-	public void RpcDestroyObject(int row, int col){
-		Destroy (grid[row, col].building);
+	public void AddPowerUp(int powerUpNumber){
+		if (playerSide == 1) {
+			power1 = powerUpNumber;
+			currentPowerUp1.AddPowerUp (powerUpNumber);
+		} else {
+			power2 = powerUpNumber;
+			currentPowerUp2.AddPowerUp (powerUpNumber);
+		}
 	}
 
-	// end of new code
+	public void SetReference(GameObject newHouse, int row, int col){
+		grid [row, col].building = newHouse;
+	}
+
+	public void SetReferenceMine(GameObject newMine, int row, int col){
+		if (newMine == null) {
+			grid [row, col].hasMine = true;
+			return;
+		}
+		grid [row, col].mine = newMine;
+		grid [row, col].hasMine = true;
+	}
+
+	public void AddHouseHammer(int row, int col){
+		if (buildNumber == 1) {
+			AddHouse (row, col);
+			EndTurn ();
+		}
+		else {
+			AddHouse(row, col);
+			buildNumber++;
+			if (isGameOver ()) {
+				EndTurn ();
+				return;
+			}
+		}
+	}
+
+
+	#endregion
+
+	#region Game Logic
 
 	public int GetPlayer(){
 		return playerSide;
 	}
-
-	void SetGameControllerReferenceButtons() {
-		for (int i = 0; i < buttonList.Length; i++) {
-			buttonList[i].GetComponentInParent<ButtonController>().SetGameControllerReference(this);
+		
+	public bool hasPowerUp(int row, int col){
+		if (grid [row, col].buildingType == -1) {
+			return true;
 		}
-	}
-
-	[Command]
-	public void CmdSetBuildingsInteractable(bool interactable){
-		RpcSetBuildingsInteractable (interactable);
-	}
-
-	[ClientRpc]
-	void RpcSetBuildingsInteractable(bool interactable) {
-		for (int i = 0; i < 5; i++) {
-			for (int j = 0; j < 5; j++) {
-				if (grid [i, j].buildingType > 0) { // buildingType is {1,3,4,5,9,10}
-					grid [i, j].button.interactable = interactable;
-				} else {
-					grid [i, j].button.interactable = !interactable;
-				}
-			}
-		}
-	}
-
-	public void ToggleButtonsInteractable(bool toggle){
-		for (int i = 0; i < 5; i++){
-			for (int j = 0; j < 5; j++) {
-				grid [i, j].button.interactable = toggle;
-			}
-		}
-		// Debug.Log ("Successfully toggled buttons");
+		return false;
 	}
 
 	public void UsePowerUp(int player){
@@ -301,31 +443,100 @@ public class GameController : NetworkBehaviour {
 			return;
 		}
 		if (player == 1) {
-			// Debug.Log ("success 1");
 			canvasController.powerUp = power1;
 			SetPowerUp (power1);
-			CmdAddPowerUp (-1);
+			AddPowerUp (-1);
 		} else {
-			// Debug.Log ("Success 2");
 			canvasController.powerUp = power2;
 			SetPowerUp(power2);
-			CmdAddPowerUp (-1);
+			AddPowerUp (-1);
 		}
 	}
 
-	public void SetPowerUp(int powerUp){
-		if (powerUp == 1) {
-			currentPowerUp1.SetInteractable (false);
-			currentPowerUp2.SetInteractable (false);
-		} else if (powerUp == 2) {
-			CmdSetBuildingsInteractable (true);
+	public void CheckBuildings(){
+		if (newBuilding) {
+			// cannot build hotel and row at the same time
+			if (!CheckHotel (playerSide)) {
+				int[] multiples = CheckMultiple (playerSide, newRow1, newCol1);
+				if (playerSide == 1) {
+					score1 += multiples [0] * 10 + multiples [1] * 20 + multiples [2] * 50;
+				} else {
+					score2 += multiples [0] * 10 + multiples [1] * 20 + multiples [2] * 50;
+				}
+			}
 		}
-		for (int i = 0; i < buttonList.Length; i++) {
-			buttonList[i].GetComponentInParent<ButtonController>().SetPowerUp(powerUp);
-		}
+		playerScore1.text = score1.ToString ();
+		playerScore2.text = score2.ToString ();
+		newBuilding = false;
 	}
+
+	public void EndTurn() {
+		moveCount++;
+
+		CheckBuildings();
+
+		if (playerSide == 1) {
+			playerSide = 2;
+			currentPlayer.text = "Player 2";
+			currentPlayer.color = new Color (0.1F, 0.13F, 0.8F, 1.0F); // blue
+		} else {
+			playerSide = 1;
+			currentPlayer.text = "Player 1";
+			currentPlayer.color = new Color (0.67F, 0.02F, 0.02F, 1.0F); // red
+		}
+
+		// no more possible moves
+		if (isGameOver()) {
+			if (score1 > score2) { // player 1 win
+				currentPlayer.color = new Color (0.67F, 0.02F, 0.02F, 1.0F);
+				gameOver.text = "Player 1 Wins!";
+				matchController.GameOver (1);
+			} else if (score2 > score1) { // player 2 win
+				currentPlayer.color = new Color (0.1F, 0.13F, 0.8F, 1.0F);
+				gameOver.text = "Player 2 Wins!";
+				matchController.GameOver (2);
+			} else { // draw
+				gameOver.color = Color.grey;
+				gameOver.text = "Draw!";
+				matchController.GameOver ();
+			}
+		}
+
+		CmdSpawnPowerUp();
+		newBuilding = false;
+		SetPowerUp (-1);
+		currentPowerUp1.SetInteractable (true);
+		currentPowerUp2.SetInteractable (true);
+		buildNumber = 0;
+		canvasController.powerUp = -1;
+		SetBuildingsInteractable (false);
+	}
+
+	public bool HasMine(int row, int col){
+		return grid [row, col].hasMine;
+	}
+
+	public void StepMine(int row, int col){
+		Instantiate(explosionMine, grid[row, col].button.transform.position, Quaternion.identity);
+		NetworkServer.UnSpawn (grid [row, col].mine);
+		Destroy (grid [row, col].mine);
+		grid [row, col].hasMine = false;
+		grid [row, col].button.interactable = true;
+		if (playerSide == 1) {
+			score1 = Math.Max (0, score1 - 10);
+		} else {
+			score2 = Math.Max (0, score2 - 10);
+		}
+		if (gamePowerUp == 1) {
+			buildNumber = 1;
+		}
+		playerScore1.text = score1.ToString ();
+		playerScore2.text = score2.ToString ();
+	}
+
 
 	public void Bomb(int row, int col) {
+		Instantiate(explosionDynamite, grid[row, col].button.transform.position, Quaternion.identity);
 		if (grid [row, col].buildingType <= 0) {
 			// do nothing
 		} else {
@@ -403,157 +614,11 @@ public class GameController : NetworkBehaviour {
 			grid[row, col].connected4 = new List<GridSpace>();
 			Destroy (grid[row, col].building);
 		}
-	}
-
-	public GameObject AddMine(int row, int col){
-		// destroy mine, if there is one already
-		Vector3 location = grid[row, col].button.transform.position;
-		Destroy (grid [row, col].mine);
-		if (playerSide == 1) {
-			grid [row, col].mine = Instantiate (mine1, location, Quaternion.identity);
-			power1 = -1;
-		} else {
-			grid [row, col].mine = Instantiate (mine2, location, Quaternion.identity);
-			power2 = -1;
-		}
-		grid[row, col].hasMine = true; // mine
-		CmdAddPowerUp(-1);
-		return grid [row, col].mine;
-	}
-
-    public GameObject AddHouse(int row, int col) {
-		Vector3 location = grid [row, col].button.transform.position;
-		if (grid [row, col].hasMine) {
-			NetworkServer.UnSpawn (grid [row, col].mine);
-			Destroy (grid [row, col].mine);
-			grid [row, col].hasMine = false;
-			grid [row, col].button.interactable = true;
-			if (playerSide == 1) {
-				score1 = Math.Max (0, score1 - 10);
-			} else {
-				score2 = Math.Max (0, score2 - 10);
-			}
-			EndTurn ();
-		} else {
-	        if (playerSide == 1) {
-				if (grid [row, col].buildingType == -1) { // if power up
-					// NetworkServer.UnSpawn (grid [row, col].building);
-					Destroy(grid[row, col].building); // this does not destroy power up on client, will fix later
-					// CmdAddPowerUp(randomness.Next(3));//setpower up
-					CmdAddPowerUp(randomness.Next(3));
-	            }
-
-	            grid[row, col].building = Instantiate(house1, location, Quaternion.identity);
-	            grid[row, col].player = 1;
-	        }
-	        else {
-				if (grid [row, col].buildingType == -1) { // if power up
-					// NetworkServer.UnSpawn (grid [row, col].building);
-					Destroy(grid[row, col].building); // this does not destroy power up on client, will fix later
-					// CmdAddPowerUp(randomness.Next(3)); //setpowerup
-					CmdAddPowerUp(randomness.Next(3));
-				}
-
-				grid [row, col].building = Instantiate (house2, location, Quaternion.identity);
-	            grid[row, col].player = 2;
-	        }
-			// grid [row, col].button.interactable = false;
-			grid[row, col].buildingType = 1;
-	        newRow1 = row;
-	        newCol1 = col;
-	        newBuilding = true;
-			return grid [row, col].building;
-		}
-		return null;
-    }
-
-	public void SetReference(GameObject newHouse, int row, int col){
-		grid [row, col].building = newHouse;
-	}
-
-	public void SetReferenceMine(GameObject newMine, int row, int col){
-		if (newMine == null) {
-			grid [row, col].hasMine = true;
-			return;
-		}
-		grid [row, col].mine = newMine;
-		grid [row, col].hasMine = true;
-	}
-
-	public void AddHouseHammer(int row, int col){
-		if (buildNumber == 1) {
-			AddHouse(row, col);
-			EndTurn();
-		}
-		else {
-			AddHouse(row, col);
-			buildNumber++;
-			if (isGameOver ()) {
-				EndTurn ();
-				return;
-			}
-			if (!CheckHotel (playerSide)) {
-				int[] multiples = CheckMultiple (playerSide, row, col);
-				if (playerSide == 1) {
-					score1 += multiples [0] * 10 + multiples [1] * 20 + multiples [2] * 50;
-				} else {
-					score2 += multiples [0] * 10 + multiples [1] * 20 + multiples [2] * 50;
-				}
-			}
-		}
-	}
-
-    public void EndTurn() {
-        moveCount++;
-		// Check if a house was built this turn. If not, don't need to check for combinations like hotel
-		if (newBuilding) {
-			// cannot build hotel and row at the same time
-			if (!CheckHotel (playerSide)) {
-				int[] multiples = CheckMultiple (playerSide, newRow1, newCol1);
-				if (playerSide == 1) {
-					score1 += multiples [0] * 10 + multiples [1] * 20 + multiples [2] * 50;
-				} else {
-					score2 += multiples [0] * 10 + multiples [1] * 20 + multiples [2] * 50;
-				}
-			}
-		}
 		playerScore1.text = score1.ToString ();
-		playerScore2.text = score2.ToString();
+		playerScore2.text = score2.ToString ();
+	}
 
-		if (playerSide == 1) {
-			playerSide = 2;
-			currentPlayer.text = "Player 2";
-			currentPlayer.color = new Color (0.1F, 0.13F, 0.8F, 1.0F); // blue
-		} else {
-			playerSide = 1;
-			currentPlayer.text = "Player 1";
-			currentPlayer.color = new Color (0.67F, 0.02F, 0.02F, 1.0F); // red
-		}
-
-		if (isGameOver()) {
-			if (score1 > score2) { // player 1 win
-				currentPlayer.color = new Color (0.67F, 0.02F, 0.02F, 1.0F);
-				gameOver.text = "Player 1 Wins!";
-			} else if (score2 > score1) { // player 2 win
-				currentPlayer.color = new Color (0.1F, 0.13F, 0.8F, 1.0F);
-				gameOver.text = "Player 2 Wins!";
-			} else { // draw
-				gameOver.color = Color.grey;
-				gameOver.text = "Draw!";
-			}
-		}
-
-		CmdSpawnPowerUp();
-		newBuilding = false;
-		SetPowerUp (-1);
-		currentPowerUp1.SetInteractable (true);
-		currentPowerUp2.SetInteractable (true);
-		buildNumber = 0;
-		canvasController.powerUp = -1;
-		CmdSetBuildingsInteractable (false);
-    }
-
-	bool isGameOver(){
+	public bool isGameOver(){
 		// if any square is empty game is still not over
 		for (int i = 0; i < 5; i++) {
 			for (int j = 0; j < 5; j++) {
@@ -838,6 +903,8 @@ public class GameController : NetworkBehaviour {
 		// Debug.Log (dict [3] + ", " + dict [4] + ", " + dict [5]);
 		return new int[3] {dict[3],dict[4],dict[5]};
     }
+
+	#endregion
 }
 
 class GridSpace {

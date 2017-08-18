@@ -21,6 +21,7 @@ GameObject:
   - component: {fileID: 4657382057677166}
   - component: {fileID: 114388207971130242}
   - component: {fileID: 114256552730793730}
+  - component: {fileID: 114091672653504942}
   m_Layer: 0
   m_Name: Player
   m_TagString: Untagged
@@ -41,6 +42,19 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &114091672653504942
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1902974266246192}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0b6c2d4aec515044baf338c813f7d0a7, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  txtStatus: {fileID: 0}
+  dispName: 
 --- !u!114 &114256552730793730
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -72,7 +86,7 @@ MonoBehaviour:
     i14: 205
     i15: 34
   m_ServerOnly: 0
-  m_LocalPlayerAuthority: 0
+  m_LocalPlayerAuthority: 1
 --- !u!114 &114388207971130242
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -84,6 +98,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8b35f3f0441dcbb4789441205c2a2b9c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  buildNumber: 0
   player: 0
+  playername: 
   gameController: {fileID: 0}
-  house1: {fileID: 1174498252196000, guid: 5eeabd7dea82bc24aa2140a30dcd93c1, type: 2}
+  canvasController: {fileID: 0}
+  matchController: {fileID: 0}
+  otherPlayer: {fileID: 0}

@@ -1,8 +1,11 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Networking;
 
-public class MatchController : MonoBehaviour {
+public class MatchController : NetworkBehaviour {
+
+	// private int turn = 1;
 
 	public const string MatchReady = "MatchController.Ready";
 
@@ -11,6 +14,8 @@ public class MatchController : MonoBehaviour {
 	public PlayerController remotePlayer;
 	public PlayerController hostPlayer;
 	public PlayerController clientPlayer;
+	public CanvasController canvasController;
+	public ScoreManager scoreManager;
 
 	public UnityEngine.Networking.NetworkInstanceId hostPlayerID;
 	public UnityEngine.Networking.NetworkInstanceId clientPlayerID;
@@ -66,16 +71,48 @@ public class MatchController : MonoBehaviour {
 		hostPlayer = (localPlayer.isServer) ? localPlayer : remotePlayer;
 		clientPlayer = (localPlayer.isServer) ? remotePlayer : localPlayer;
 
+		// set player number and matchcontroller references
 		hostPlayer.player = 1;
 		clientPlayer.player = 2;
-		// hostPlayer.otherPlayer = clientPlayer;
-		// clientPlayer.otherPlayer = hostPlayer;
-		// clientPlayer.gameController.ToggleButtonsInteractable (false);
+		hostPlayer.matchController = this;
+		clientPlayer.matchController = this;
+
+		// add new players to database, if not there yet
+		scoreManager.AddNewPlayer (hostPlayer.playername);
+		scoreManager.AddNewPlayer (clientPlayer.playername);
 
 		hostPlayerID = hostPlayer.netId;
 		clientPlayerID = clientPlayer.netId;
+		canvasController.ChangePlayer (hostPlayer);
+		canvasController.SetPlayer1 (hostPlayer);
+		canvasController.SetPlayer2 (clientPlayer);
 
 		this.PostNotification (MatchReady);
 	}
 
+	// when there is a winner
+	public void GameOver(int winner){
+		// get host player name
+		string host = hostPlayer.playername;
+		// get client player name
+		string client = clientPlayer.playername;
+
+		if (winner == 1) {
+			// host player wins
+			scoreManager.GameOver(host, client, false);
+		} else if (winner == 2){
+			// client player wins
+			scoreManager.GameOver(client, host, false);
+		}
+	}
+
+	// when game is a draw
+	public void GameOver(){
+		// get host player name
+		string host = hostPlayer.playername;
+		// get client player name
+		string client = clientPlayer.playername;
+
+		scoreManager.GameOver (host, client, true);
+	}
 }

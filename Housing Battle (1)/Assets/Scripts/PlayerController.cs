@@ -7,9 +7,10 @@ public class PlayerController : NetworkBehaviour {
 
 	public int buildNumber = 0;
 	public int player;
+    public string playername; //local playername
 	public GameController gameController;
 	public CanvasController canvasController;
-	public GameObject house1;
+	public MatchController matchController;
 
 	[HideInInspector]
 	public PlayerController otherPlayer;
@@ -20,13 +21,22 @@ public class PlayerController : NetworkBehaviour {
 	public const string CoinToss = "PlayerController.CoinToss";
 	public const string AddHouse = "PlayerController.AddHouse";
 
+    FBScript facebookFunctions; //facebook for login
+
 	void Awake(){
 		gameController = GameObject.Find("GameController").GetComponent<GameController>();
+        //facebookFunctions = GetComponent<FBScript>(); //get the script
 	}
 
 	void Start(){
-		GameObject.Find ("Canvas").GetComponent<CanvasController> ().player = this;
 		gameController.playerController = this;
+        facebookFunctions = GetComponent<FBScript>(); //get the script
+        facebookFunctions.FBLogin(); //forcelogin once this starts
+        playername = facebookFunctions.getDisplayName();
+	}
+
+	void Update(){
+		playername = facebookFunctions.getDisplayName();
 	}
 
 	public override void OnStartClient(){
@@ -55,25 +65,6 @@ public class PlayerController : NetworkBehaviour {
 		this.PostNotification(CoinToss, coinToss);
 	}
 
-	/*
-	[Command]
-	public void CmdMarkGridSpace(int index){
-		int row = index / 5;
-		int col = index % 5;
-		GameObject newHouse = gameController.AddHouse (row, col);
-		NetworkServer.Spawn (newHouse);
-		// RpcMarkGridSpace (index);
-	}
-
-	[ClientRpc]
-	void RpcMarkGridSpace(int index){
-		int row = index / 5;
-		int col = index % 5;
-		gameController.AddHouse (row, col);
-	}
-
-	*/
-
 	[Command]
 	public void CmdSpawnHouse(int idx){
 		RpcSpawnHouse (idx);
@@ -83,6 +74,16 @@ public class PlayerController : NetworkBehaviour {
 	void RpcSpawnHouse(int idx){
 		int row = idx / 5;
 		int col = idx % 5;
+		if (gameController.HasMine(row, col)){
+			gameController.StepMine(row, col);
+			RpcEndTurn();
+			return;
+		}
+		if (gameController.hasPowerUp(row, col)){
+			if (isLocalPlayer) {
+				gameController.AddPowerUp ();
+			}
+		}
 		GameObject newHouse = gameController.AddHouse(row, col);
 		NetworkServer.SpawnWithClientAuthority (newHouse, this.gameObject);
 		gameController.SetReference (newHouse, row, col);
@@ -101,12 +102,38 @@ public class PlayerController : NetworkBehaviour {
 		int row = idx / 5;
 		int col = idx % 5;
 		if (buildNumber == 0) {
+			if (gameController.HasMine (row, col)) {
+				gameController.StepMine (row, col);
+				buildNumber++;
+				return;
+			}
+			if (gameController.hasPowerUp(row, col)){
+				if (isLocalPlayer) {
+					gameController.AddPowerUp ();
+				}
+			}
 			GameObject newHouse = gameController.AddHouse(row, col);
 			NetworkServer.SpawnWithClientAuthority (newHouse, this.gameObject);
 			gameController.SetReference (newHouse, row, col);
 			gameController.CmdToggleButtonInteractable (row, col, false);
+			gameController.CheckBuildings ();
+			if (gameController.isGameOver ()) {
+				gameController.EndTurn ();
+				return;
+			}
 			buildNumber++;
 		} else {
+			if (gameController.HasMine (row, col)) {
+				gameController.StepMine (row, col);
+				buildNumber = 0;
+				RpcEndTurn();
+				return;
+			}
+			if (gameController.hasPowerUp(row, col)){
+				if (isLocalPlayer) {
+					gameController.AddPowerUp ();
+				}
+			}
 			GameObject newHouse = gameController.AddHouse(row, col);
 			NetworkServer.SpawnWithClientAuthority (newHouse, this.gameObject);
 			gameController.SetReference (newHouse, row, col);
@@ -145,7 +172,6 @@ public class PlayerController : NetworkBehaviour {
 		if (isLocalPlayer) {
 			newMine = gameController.AddMine (row, col);
 		}
-		// NetworkServer.SpawnWithClientAuthority (newMine, this.gameObject);
 		gameController.SetReferenceMine (newMine, row, col);
 		gameController.canvasController.powerUp = -1;
 	}
@@ -159,26 +185,20 @@ public class PlayerController : NetworkBehaviour {
 	void RpcBomb(int idx){
 		int row = idx / 5;
 		int col = idx % 5;
-		gameController.CmdSetBuildingsInteractable (true);
+		// gameController.SetBuildingsInteractable (true);
 		gameController.Bomb (row, col);
 		RpcEndTurn ();
 	}
 
-	/*
-	[Command]
-	public void CmdDestroyObject(int row, int col){
-		gameController.DestroyObject (row, col);
-	}
-	*/
-
 	void EndTurn(){
 		RpcEndTurn();
+		// canvasController.ChangePlayer(otherPlayer);
 	}
 
 	[ClientRpc]
 	void RpcEndTurn(){
 		gameController.EndTurn ();
+		// matchController.CmdEndTurn ();
 		// gameController.playerController = otherPlayer;
-		// canvasController.player = otherPlayer;
 	}
 }
